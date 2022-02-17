@@ -12,7 +12,6 @@ on:
       fossa-api-key:
         required: true
 
-
 jobs:
   fossa-scan:
     # Runs fossa container analyze (default behavior) 

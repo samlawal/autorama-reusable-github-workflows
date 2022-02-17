@@ -1,0 +1,34 @@
+name: ci-fossa-test-workflow
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'the branch'     
+        type: string
+        default: 'develop'
+        required: true
+
+jobs:
+  fossa-scan:
+    # Runs fossa container analyze (default behavior) 
+    # This results in a FOSSA report, navigatable from the executed gha
+    # Developer can proceed to review any dependency and license issues in the code
+    # This requires set-up of app in FOSSA by admin
+    # If any issues are found, these will be flagged by the FOSSA test step
+    # and the gha workflow will fail.
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout branch"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.ref }} 
+      - name: "Run FOSSA Scan"
+        uses: fossas/fossa-action@main
+        with:
+          api-key: ${{ secrets.GRID_FOSSA_API_KEY }}
+      - name: "Run FOSSA Test"
+        uses: fossas/fossa-action@main
+        with:
+          api-key: ${{ secrets.GRID_FOSSA_API_KEY }}
+          run-tests: true

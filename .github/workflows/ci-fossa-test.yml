@@ -8,6 +8,10 @@ on:
         type: string
         default: 'develop'
         required: true
+    secrets:
+      fossa-api-key:
+        required: true
+
 
 jobs:
   fossa-scan:
@@ -26,9 +30,9 @@ jobs:
       - name: "Run FOSSA Scan"
         uses: fossas/fossa-action@main
         with:
-          api-key: ${{ secrets.GRID_FOSSA_API_KEY }}
+          api-key: ${{ secrets.fossa-api-key }}
       - name: "Run FOSSA Test"
         uses: fossas/fossa-action@main
         with:
-          api-key: ${{ secrets.GRID_FOSSA_API_KEY }}
+          api-key: ${{ secrets.fossa-api-key }}
           run-tests: true

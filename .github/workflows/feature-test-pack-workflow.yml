@@ -37,6 +37,10 @@ jobs:
   run-test-pack:
     runs-on: ubuntu-latest
     continue-on-error: true
+    # These permissions are required to use Github OIDC.
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:

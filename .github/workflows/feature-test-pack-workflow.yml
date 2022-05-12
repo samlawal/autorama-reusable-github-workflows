@@ -26,7 +26,7 @@ on:
       browser:
         type: string
         required: false
-        default: headless
+        default: chrome
     secrets:
       grid_git_grid_token:
         required: true

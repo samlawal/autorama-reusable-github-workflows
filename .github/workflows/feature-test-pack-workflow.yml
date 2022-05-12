@@ -11,6 +11,14 @@ on:
         type: string
         required: true
         description: environment. eg. dev|uat|pre-prod|prod
+      aws-region:
+        type: string
+        required: true
+        description: aws region
+      s3-bucket-reports:
+        type: string
+        required: true
+        description: aws bucket where the test reports will be exported
       test_packs:
         type: string
         required: true
@@ -21,6 +29,8 @@ on:
         default: headless
     secrets:
       grid_git_grid_token:
+        required: true
+      aws_role:
         required: true
 
 jobs:
@@ -41,8 +51,8 @@ jobs:
           chromedriver-version: '101.0.4951.41'
       - uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-region: ${{ env.region }}
-          role-to-assume: ${{ secrets.GRID_DEV_GHA_ACTION_ROLE }}
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ secrets.aws_role }}
       - name: clone watchman repo
         run: |
           # checkout watchman repo using git
@@ -66,7 +76,7 @@ jobs:
 
           bundle exec cucumber ./${{ matrix.value.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format html --out=${report_file_name} -q -f pretty || cucumber_exit_code="$?"
           
-          aws s3 cp --acl public-read ${report_file_name} s3://${{ env.s3-bucket-reports }}/${{ env.env }}/${date_now}/${report_file_name}
+          aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3-bucket-reports }}/${{ inputs.env }}/${date_now}/${report_file_name}
 
           if [[ "$cucumber_exit_code" != "0" ]]; then
             exit 1

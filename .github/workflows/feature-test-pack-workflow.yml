@@ -26,7 +26,9 @@ on:
 jobs:
   run-test-pack:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         value:
           - ${{ fromJson(inputs.test_packs) }}
@@ -34,12 +36,39 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6.5
-      - run: |
+      - uses: nanasess/setup-chromedriver@v1
+        with:
+          chromedriver-version: '101.0.4951.41'
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ env.region }}
+          role-to-assume: ${{ secrets.GRID_DEV_GHA_ACTION_ROLE }}
+      - name: clone watchman repo
+        run: |
           # checkout watchman repo using git
           git clone https://${{ secrets.grid_git_grid_token }}@github.com/${{ inputs.watchman_repo }}.git 
+      - name: install dependencies
+        run: |
           cd watchman/features
           BUNDLE_GEMFILE="${{ github.workspace }}/watchman/Gemfile"
           bundle install
           echo "here's the matrix value"
           echo ${{ matrix.value.test_pack }}
-          bundle exec cucumber ./${{ matrix.value.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format json --out=cucumber-report.json -q -f pretty
+      - name: run tests
+        run: |
+          cd watchman/features
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+          
+          date_now="$(date +%F)"
+          report_file_name="${{ matrix.value.test_pack }}.html"
+
+          bundle exec cucumber ./${{ matrix.value.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format html --out=${report_file_name} -q -f pretty || cucumber_exit_code="$?"
+          
+          aws s3 cp --acl public-read ${report_file_name} s3://${{ env.s3-bucket-reports }}/${{ env.env }}/${date_now}/${report_file_name}
+
+          if [[ "$cucumber_exit_code" != "0" ]]; then
+            exit 1
+          fi
+  

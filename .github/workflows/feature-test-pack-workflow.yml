@@ -11,11 +11,11 @@ on:
         type: string
         required: true
         description: environment. eg. dev|uat|pre-prod|prod
-      aws-region:
+      aws_region:
         type: string
         required: true
         description: aws region
-      s3-bucket-reports:
+      s3_bucket_reports:
         type: string
         required: true
         description: aws bucket where the test reports will be exported
@@ -76,7 +76,7 @@ jobs:
 
           bundle exec cucumber ./${{ matrix.value.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format html --out=${report_file_name} -q -f pretty || cucumber_exit_code="$?"
           
-          aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3-bucket-reports }}/${{ inputs.env }}/${date_now}/${report_file_name}
+          aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3_bucket_reports }}/${{ inputs.env }}/${date_now}/${report_file_name}
 
           if [[ "$cucumber_exit_code" != "0" ]]; then
             exit 1

@@ -81,7 +81,7 @@ jobs:
         run: |
           echo "running test - ${{ matrix.test_pack }}"
           
-          cd watchman/features
+          cd watchman
           export DISPLAY=:99
           chromedriver --url-base=/wd/hub &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
@@ -89,7 +89,7 @@ jobs:
           date_now="$(date +%F)"
           report_file_name="${{ matrix.test_pack }}.html"
 
-          bundle exec cucumber ./${{ matrix.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format html --out=${report_file_name} -q -f pretty || cucumber_exit_code="$?"
+          bundle exec cucumber ./features/${{ matrix.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
           
           aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3_bucket_reports }}/${{ inputs.env }}/${date_now}/${report_file_name}
 

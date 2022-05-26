@@ -71,7 +71,7 @@ jobs:
           bundle install
       - name: run tests
         run: |
-          if [ -z ${{ matrix.value.test_pack }} ]; then
+          if [ -z "${{ matrix.value.test_pack }}" ]; then
             export test_type="tag"
             export test_pack=${{ matrix.value.tag }}
           else

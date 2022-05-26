@@ -22,11 +22,14 @@ on:
       test_packs:
         type: string
         required: true
-        description: comma separated test packs. eg. olaf_features,wishlist_features
-      browser:
-        type: string
-        required: false
-        default: chrome
+        description: |
+          test packs json.
+          
+          examples:
+          
+          [{\"test_pack\":\"olaf_features\","\browser\":\"chrome\"},{\"test_pack\":\"wishlist_features\","\browser\":\"chrome\"}]
+          
+          [{\"tag\":\"levc\","\browser\":\"headless\"},{\"tag\":\"hub_pages\","\browser\":\"headless\"}]
     secrets:
       grid_git_grid_token:
         required: true
@@ -34,29 +37,18 @@ on:
         required: true
 
 jobs:
-  set-vars:
-    runs-on: ubuntu-latest
-    outputs:
-      test-pack-json: ${{ steps.set-vars.outputs.test-pack-json }}
-    steps:
-      - id: set-vars
-        name: set output
-        run: |
-          test_pack_json=$(echo ${{ inputs.test_packs }} | jq -cR '. | split(",")')
-          echo test_pack_json - ${test_pack_json}
-          echo "::set-output name=test-pack-json::$test_pack_json"
   run-test-pack:
-    needs: [set-vars]
     runs-on: ubuntu-latest
-    continue-on-error: true
+    # continue-on-error: true
     # These permissions are required to use Github OIDC.
     permissions:
       id-token: write
       contents: read
     strategy:
-      fail-fast: false
+      # fail-fast: false
       matrix:
-        test_pack: ${{ fromJson(needs.set-vars.outputs.test-pack-json) }}
+        value:
+          - ${{ fromJson(inputs.test_packs) }}
     steps:
       - uses: ruby/setup-ruby@v1
         with:
@@ -79,7 +71,15 @@ jobs:
           bundle install
       - name: run tests
         run: |
-          echo "running test - ${{ matrix.test_pack }}"
+          if [ -z ${{ matrix.value.test_pack }} ]; then
+            export test_type="tag"
+            export test_pack=${{ matrix.value.tag }}
+          else
+            export test_type="feature"
+            export test_pack=${{ matrix.value.test_pack }}
+          fi
+
+          echo "running test - ${test_pack}"
           
           cd watchman
           export DISPLAY=:99
@@ -87,13 +87,16 @@ jobs:
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
           
           date_now="$(date +%F)"
-          report_file_name="${{ matrix.test_pack }}.html"
+          report_file_name="${test_pack}.html"
 
-          bundle exec cucumber ./features/${{ matrix.test_pack }} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ inputs.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
+          if [ "$test_type" == "feature" ]; then
+            bundle exec cucumber ./features/${test_pack} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
+          else
+            cucumber -tag @${test_pack} ENVIRONMENT=${{ inputs.env }}	BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
+          fi
           
           aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3_bucket_reports }}/${{ inputs.env }}/${date_now}/${report_file_name}
 
           if [[ "$cucumber_exit_code" != "0" ]]; then
             exit 1
           fi
-  

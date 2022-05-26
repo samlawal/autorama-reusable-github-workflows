@@ -100,7 +100,7 @@ jobs:
           aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3_bucket_reports }}/${{ inputs.env }}/${date_now}/${report_file_name}
 
           echo "report available at:"
-          echo "https://${{ inputs.s3_bucket_reports }}/${{ inputs.env }}/${date_now}/${report_file_name}"
+          echo "https://${{ inputs.s3_bucket_reports }}.s3.${{ inputs.aws_region }}.amazonaws.com/${{ inputs.env }}/${date_now}/${report_file_name}"
 
           if [[ "$cucumber_exit_code" != "0" ]]; then
             exit 1

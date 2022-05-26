@@ -79,7 +79,7 @@ jobs:
             export test_pack=${{ matrix.value.test_pack }}
           fi
 
-          echo "running test - ${test_pack}"
+          echo "running ${test_type} ${test_pack}"
           
           cd watchman
           export DISPLAY=:99
@@ -92,7 +92,8 @@ jobs:
           if [ "$test_type" == "feature" ]; then
             bundle exec cucumber ./features/${test_pack} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
           else
-            cucumber -tag @${test_pack} ENVIRONMENT=${{ inputs.env }}	BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
+            cd features
+            cucumber --tag @${test_pack} ENVIRONMENT=${{ inputs.env }}	BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
           fi
           
           aws s3 cp --acl public-read ${report_file_name} s3://${{ inputs.s3_bucket_reports }}/${{ inputs.env }}/${date_now}/${report_file_name}

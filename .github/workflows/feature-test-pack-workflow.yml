@@ -92,7 +92,6 @@ jobs:
           if [ "$test_type" == "feature" ]; then
             bundle exec cucumber ./features/${test_pack} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
           else
-            cd features
             cucumber --tag @${test_pack} ENVIRONMENT=${{ inputs.env }}	BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"
           fi
           

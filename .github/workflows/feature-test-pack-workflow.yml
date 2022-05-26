@@ -88,6 +88,7 @@ jobs:
           
           date_now="$(date +%F)"
           report_file_name="${test_pack}.html"
+          cucumber_exit_code="0"
 
           if [ "$test_type" == "feature" ]; then
             bundle exec cucumber ./features/${test_pack} ENVIRONMENT=${{ inputs.env }} BROWSER=${{ matrix.value.browser }} --format html --out=${report_file_name} -f pretty || cucumber_exit_code="$?"

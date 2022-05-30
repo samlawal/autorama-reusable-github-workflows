@@ -48,7 +48,7 @@ jobs:
       # fail-fast: false
       matrix:
         value:
-          - ${{ fromJson(inputs.test_packs) }}
+          - ${{ fromJson(inputs.test_tags) }}
     steps:
       - uses: ruby/setup-ruby@v1
         with:

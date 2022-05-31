@@ -106,3 +106,5 @@ jobs:
           if [[ "$cucumber_exit_code" != "0" ]]; then
             exit 1
           fi
+          
+          exit 1

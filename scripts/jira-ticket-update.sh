@@ -6,10 +6,10 @@ set -x
 #   $APP - app/repository name
 #   $ENV - environment
 #   $ARTIFACT_TAG - github tag used for deployment (release-5488a22)
-#   $JIRA_REF_LIST - comma separated jira ticket ids
+#   $JIRA_REF_LIST - whitespace separated jira ticket ids
 #   $JIRA_API_TOKEN - Jira API Token
 
-JIRA_REF_LIST=(${JIRA_REF_LIST})
+JIRA_REF_LIST_ARRAY=($(echo $JIRA_REF_LIST))
 RELEASE_DATE=$(date +'%Y-%m-%d')
 
 COMPONENT_ID=$(curl --request GET \
@@ -20,7 +20,7 @@ COMPONENT_ID=$(curl --request GET \
         | jq '.[0].id' \
         | tr -d \")
 
-for ref in "${JIRA_REF_LIST[@]}"; do
+for ref in "${JIRA_REF_LIST_ARRAY[@]}"; do
 
 EXISTING_COMPONENTS_JSON=$(curl -s \
     --url "https://autorama.atlassian.net/rest/api/3/issue/${ref}" \

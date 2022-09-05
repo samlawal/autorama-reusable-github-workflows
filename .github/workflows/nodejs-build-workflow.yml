@@ -64,7 +64,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ needs.set-env.outputs.github_sha }}
+          ref: ${{ inputs.github_sha }}
       
       # setup aws credentials for uat to pull the ecr image
       

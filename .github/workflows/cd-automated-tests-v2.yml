@@ -66,7 +66,7 @@ jobs:
           ruby-version: 2.6.5
       - uses: nanasess/setup-chromedriver@v1
         with:
-          chromedriver-version: '104.0.5112.79'
+          chromedriver-version: '106.0.5249.61'
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ inputs.aws_region }}

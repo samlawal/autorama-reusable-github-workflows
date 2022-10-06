@@ -50,6 +50,7 @@ on:
 jobs:
   run-test-pack:
     runs-on: ubuntu-latest
+    # test-addition-sam
     # continue-on-error: true
     # These permissions are required to use Github OIDC.
     permissions:
